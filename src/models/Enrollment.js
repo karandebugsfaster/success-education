@@ -1,94 +1,133 @@
 // models/Enrollment.js
 import mongoose from 'mongoose';
 
+// ─── Course names must match EXACTLY what lib/courses-data.js exports ───
+const VALID_COURSES = [
+  'SAMADHI',
+  'ASPIRE',
+  'RE-RAW',
+  'ENDURANCE',
+  'ANUBHAVI',
+  'SAHAYAK',
+  'LAW',
+  'UDAY',
+];
+
+const VALID_CITIES = [
+  'Ahmedabad',
+  'Gandhinagar',
+  'Surat',
+  'Vadodara',
+  'Rajkot',
+  'Other',
+];
+
+const VALID_SOURCES = [
+  'contact',
+  'courses',
+  'interview',
+  'home',
+  'popup',
+];
+
 const EnrollmentSchema = new mongoose.Schema(
   {
+    // ── Personal Details ──────────────────────────────────────
     name: {
       type: String,
-      required: [true, 'Full name is required'],
+      required: [true, 'Name is required'],
       trim: true,
       minlength: [2, 'Name must be at least 2 characters'],
-      maxlength: [80, 'Name cannot exceed 80 characters'],
+      maxlength: [80, 'Name too long'],
     },
+
+    email: {
+      type: String,
+      required: [true, 'Email is required'],
+      trim: true,
+      lowercase: true,
+      match: [/^\S+@\S+\.\S+$/, 'Enter a valid email address'],
+    },
+
     phone: {
       type: String,
       required: [true, 'Phone number is required'],
       trim: true,
-      match: [/^[6-9]\d{9}$/, 'Please enter a valid 10-digit Indian mobile number'],
+      match: [/^[6-9]\d{9}$/, 'Enter a valid 10-digit Indian mobile number'],
     },
-    email: {
+
+    city: {
       type: String,
-      required: [true, 'Email address is required'],
       trim: true,
-      lowercase: true,
-      match: [/^\S+@\S+\.\S+$/, 'Please enter a valid email address'],
+      enum: {
+        values: VALID_CITIES,
+        message: 'Please select a valid city',
+      },
+      default: 'Other',
     },
+
+    // ── Course Selection ──────────────────────────────────────
     course: {
       type: String,
       required: [true, 'Please select a course'],
+      trim: true,
       enum: {
-        values: [
-          'IIT-JEE Foundation',
-          'NEET Preparation',
-          'IIT-JEE Advanced',
-          'Board Excellence (Class 10)',
-          'Board Excellence (Class 11-12)',
-          'MHT-CET Crash Course',
-          'Olympiad Training',
-          'Doubt Clearing Program',
-        ],
+        values: VALID_COURSES,
         message: 'Please select a valid course',
       },
     },
-    standard: {
+
+    // ── Optional message ──────────────────────────────────────
+    description: {
       type: String,
       trim: true,
-      enum: {
-        values: ['Class 8', 'Class 9', 'Class 10', 'Class 11 (Science)', 'Class 12 (Science)', 'Dropper / Repeater', ''],
-        message: 'Invalid class standard',
-      },
+      maxlength: [800, 'Message too long (max 800 characters)'],
       default: '',
     },
-    message: {
-      type: String,
-      trim: true,
-      maxlength: [500, 'Message cannot exceed 500 characters'],
-      default: '',
-    },
+
+    // ── Metadata ──────────────────────────────────────────────
     source: {
       type: String,
-      enum: ['hero', 'courses', 'contact', 'popup', 'unknown'],
-      default: 'unknown',
+      enum: {
+        values: VALID_SOURCES,
+        message: 'Invalid source',
+      },
+      default: 'contact',
     },
+
+    // Status for admin tracking (new → called → enrolled → closed)
     status: {
       type: String,
-      enum: ['new', 'contacted', 'enrolled', 'not_interested'],
+      enum: ['new', 'called', 'demo_scheduled', 'enrolled', 'not_interested', 'closed'],
       default: 'new',
     },
+
+    // Optional admin notes
+    notes: {
+      type: String,
+      default: '',
+    },
+
+    // IP for basic duplicate/spam detection (never shown in UI)
     ip: {
       type: String,
       default: '',
     },
   },
   {
-    timestamps: true, // createdAt, updatedAt auto-managed
+    timestamps: true, // adds createdAt + updatedAt automatically
     versionKey: false,
   }
 );
 
-// Index for fast queries
-EnrollmentSchema.index({ phone: 1 });
-EnrollmentSchema.index({ email: 1 });
-EnrollmentSchema.index({ course: 1 });
-EnrollmentSchema.index({ status: 1 });
-EnrollmentSchema.index({ createdAt: -1 });
+// ── Indexes ────────────────────────────────────────────────────────────────
+// Prevent duplicate: same phone + same course within 24 hours
+EnrollmentSchema.index({ phone: 1, course: 1 });
+EnrollmentSchema.index({ createdAt: -1 }); // sort by newest for admin
+EnrollmentSchema.index({ status: 1 });      // filter by status in admin
 
-// Prevent duplicate enrollments within 24 hours (same phone + course)
-EnrollmentSchema.index(
-  { phone: 1, course: 1, createdAt: 1 },
-  { background: true }
-);
-
-const Enrollment = mongoose.models.Enrollment || mongoose.model('Enrollment', EnrollmentSchema);
+// ── Model (singleton-safe for Next.js hot reload) ──────────────────────────
+const Enrollment =
+  mongoose.models.Enrollment || mongoose.model('Enrollment', EnrollmentSchema);
 
 export default Enrollment;

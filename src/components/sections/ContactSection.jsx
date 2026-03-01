@@ -11,7 +11,7 @@ import { COURSES } from '@/lib/courses-data';
 const FORM_SOURCES = { contact: 'contact' };
 
 const contactInfo = [
-  { icon: Phone, label: 'Phone Numbers', value: '+91 78279 01493 | 90168 67001 | 76019 90994', href: 'tel:+917827901493', color: '#fcc419' },
+  { icon: Phone, label: 'Phone Numbers', value: '+91 9427961335 | 9427961335 | 9427961335', href: 'tel:+917827901493', color: '#fcc419' },
   { icon: Mail, label: 'Email Address', value: 'info@successeducation.in', href: 'mailto:info@successeducation.in', color: '#748ffc' },
   { icon: MapPin, label: 'Our Location', value: 'W-207 Siddhraj Z Square (72) Kudasan, Gandhinagar, Gujarat', href: 'https://maps.google.com', color: '#51cf66' },
   { icon: Clock, label: 'Office Hours', value: 'Monday – Saturday: 8:00 AM – 8:00 PM', href: null, color: '#ff6b6b' },

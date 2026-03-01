@@ -8,6 +8,7 @@ import WhyUsSection from '@/components/sections/WhyUsSection';
 import TestimonialsSection from '@/components/sections/TestimonialsSection';
 import FAQSection from '@/components/sections/FAQSection';
 import ContactSection from '@/components/sections/ContactSection';
+// import WhatsAppFloat from '@/components/ui/WhatsAppFloat';
 
 export const metadata = {
   title: 'Success Education | Premier UPSC Coaching — Gandhinagar, Gujarat',
@@ -28,6 +29,7 @@ export default function HomePage() {
         <TestimonialsSection />
         <FAQSection />
         <ContactSection source="contact" />
+        {/* <WhatsAppFloat /> */}
       </main>
       <Footer />
     </>
